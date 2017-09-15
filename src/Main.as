@@ -15,23 +15,35 @@ import flash.display.Stage3D;
 import flash.display.StageAlign;
 import flash.display.StageScaleMode;
 import flash.events.Event;
+import flash.events.KeyboardEvent;
+import flash.geom.Matrix3D;
+import flash.geom.Point;
 import flash.net.URLLoader;
 import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
+import flash.ui.Keyboard;
+import flash.utils.Dictionary;
 
-[SWF (width=640, height=480, backgroundColor=0x000000)]
+[SWF(width=640, height=480, backgroundColor=0x000000)]
 public class Main extends Sprite {
 
-    [Embed(source = "res/stone.png")] static private const STONE_TEXTURE:Class;
+    [Embed(source="res/stone.png")]
+    static private const STONE_TEXTURE:Class;
     private var stoneTexture:BitmapTextureResource = new BitmapTextureResource(new STONE_TEXTURE().bitmapData);
 
-    [Embed(source = "res/MetalMap.png")] static private const METAL_TEXTURE:Class;
+    [Embed(source="res/MetalMap.png")]
+    static private const METAL_TEXTURE:Class;
     private var metalTexture:BitmapTextureResource = new BitmapTextureResource(new METAL_TEXTURE().bitmapData);
+
+    private var cameraDistance:Number = 256;
+    private var cameraDirection:Number = 0;
+    private var cameraPitch:Number = Math.PI / 4;
 
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
-    private var player:Mesh;
+    private var player:Sphere;
+    private var keyboard:Dictionary = new Dictionary();
 
     public function Main() {
         stage.frameRate = 60;
@@ -40,14 +52,12 @@ public class Main extends Sprite {
 
         camera = new Camera3D(1, 10000);
         camera.view = new View(640, 480);
-        camera.rotationX = -Math.PI / 2.0;
-        camera.z = 64;
         addChild(camera.view);
         addChild(camera.diagram);
         rootContainer.addChild(camera);
 
-        for (var x:int = -1000; x <= 1000; x+=256) {
-            for (var y:int = -1000; y <= 1000; y+=256) {
+        for (var x:int = -1000; x <= 1000; x += 256) {
+            for (var y:int = -1000; y <= 1000; y += 256) {
                 var plane:Plane = new Plane(256, 256);
                 plane.setMaterialToAllSurfaces(new TextureMaterial(stoneTexture));
                 plane.x = x;
@@ -60,21 +70,23 @@ public class Main extends Sprite {
         loader3ds.dataFormat = URLLoaderDataFormat.BINARY;
         loader3ds.load(new URLRequest("res/Sphere.3DS"));
         loader3ds.addEventListener(Event.COMPLETE, onSphereLoaded);
+        stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+        stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
     }
 
     private function onSphereLoaded(event:Event):void {
         var parser:Parser3DS = new Parser3DS();
         parser.parse((event.target as URLLoader).data);
-        for (var i:int = 0; i < parser.objects.length; i++)
-        {
+        var playerMesh:Mesh;
+        for (var i:int = 0; i < parser.objects.length; i++) {
             var mesh:Mesh = parser.objects[i] as Mesh;
             if (mesh.name == "Base") {
-                player = mesh;
-                player.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
+                playerMesh = mesh;
+                playerMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
             }
         }
-        player.y = 128;
-        rootContainer.addChild(player);
+        player = new Sphere(playerMesh, 0, 128);
+        rootContainer.addChild(playerMesh);
 
         stage3D = stage.stage3Ds[0];
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, onInit);
@@ -89,8 +101,37 @@ public class Main extends Sprite {
         addEventListener(Event.ENTER_FRAME, onEnterFrame);
     }
 
+    private function onKeyUp(event:KeyboardEvent):void {
+        keyboard[event.keyCode] = false;
+        if (event.keyCode == Keyboard.SPACE) {
+            trace(player.obj.matrix.rawData);
+        }
+    }
+
     private function onEnterFrame(event:Event):void {
+        if (keyboard[Keyboard.W]) {
+            player.y += 2;
+        }
+        if (keyboard[Keyboard.S]) {
+            player.y -= 2;
+        }
+        if (keyboard[Keyboard.A]) {
+            player.x -= 2;
+        }
+        if (keyboard[Keyboard.D]) {
+            player.x += 2;
+        }
+        player.onStep();
+        camera.x = player.x - cameraDistance * Math.sin(cameraDirection) * Math.cos(cameraPitch);
+        camera.y = player.y - cameraDistance * Math.cos(cameraDirection) * Math.cos(cameraPitch);
+        camera.z = 32 + cameraDistance * Math.sin(cameraPitch);
+        camera.rotationX = -cameraPitch - Math.PI / 2;
+//        camera.rotationZ = cameraDirection;
         camera.render(stage3D);
+    }
+
+    private function onKeyDown(event:KeyboardEvent):void {
+        keyboard[event.keyCode] = true;
     }
 }
 }
