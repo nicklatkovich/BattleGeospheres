@@ -22,16 +22,20 @@ import flash.net.URLRequest;
 import flash.ui.Keyboard;
 import flash.utils.Dictionary;
 
-[SWF(width=1366, height=768, backgroundColor=0x000000)]
+[SWF(width=1280, height=704, backgroundColor=0x000000)]
 public class Main extends Sprite {
 
-    [Embed(source="res/stone.png")]
+    [Embed(source="res/GroundMap.png")]
     static private const STONE_TEXTURE:Class;
     private var stoneTexture:BitmapTextureResource = new BitmapTextureResource(new STONE_TEXTURE().bitmapData);
 
     [Embed(source="res/MetalMap.png")]
     static private const METAL_TEXTURE:Class;
     private var metalTexture:BitmapTextureResource = new BitmapTextureResource(new METAL_TEXTURE().bitmapData);
+
+    [Embed(source="res/GunMap.png")]
+    static private const GUN_TEXTURE:Class;
+    private var gunTexture:BitmapTextureResource = new BitmapTextureResource(new GUN_TEXTURE().bitmapData);
 
     public static var cameraDistance:Number = 256;
     public static var cameraDirection:Number = 0;
@@ -85,7 +89,7 @@ public class Main extends Sprite {
                     break;
                 case "Base":
                     playerBaseMesh = mesh;
-                    playerBaseMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
+                    playerBaseMesh.setMaterialToAllSurfaces(new TextureMaterial(gunTexture));
             }
         }
         player = new Player(playerWheelMesh, playerBaseMesh);
