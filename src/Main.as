@@ -24,7 +24,7 @@ import flash.net.URLRequest;
 import flash.ui.Keyboard;
 import flash.utils.Dictionary;
 
-[SWF(width=640, height=480, backgroundColor=0x000000)]
+[SWF(width=1280, height=704, backgroundColor=0x000000)]
 public class Main extends Sprite {
 
     [Embed(source="res/stone.png")]
@@ -51,7 +51,7 @@ public class Main extends Sprite {
         stage.scaleMode = StageScaleMode.NO_SCALE;
 
         camera = new Camera3D(1, 10000);
-        camera.view = new View(640, 480);
+        camera.view = new View(stage.stageWidth, stage.stageHeight);
         addChild(camera.view);
         addChild(camera.diagram);
         rootContainer.addChild(camera);
