@@ -16,15 +16,13 @@ import flash.display.StageAlign;
 import flash.display.StageScaleMode;
 import flash.events.Event;
 import flash.events.KeyboardEvent;
-import flash.geom.Matrix3D;
-import flash.geom.Point;
 import flash.net.URLLoader;
 import flash.net.URLLoaderDataFormat;
 import flash.net.URLRequest;
 import flash.ui.Keyboard;
 import flash.utils.Dictionary;
 
-[SWF(width=1280, height=704, backgroundColor=0x000000)]
+[SWF(width=1366, height=768, backgroundColor=0x000000)]
 public class Main extends Sprite {
 
     [Embed(source="res/stone.png")]
@@ -77,16 +75,22 @@ public class Main extends Sprite {
     private function onSphereLoaded(event:Event):void {
         var parser:Parser3DS = new Parser3DS();
         parser.parse((event.target as URLLoader).data);
-        var playerMesh:Mesh;
+        var playerWheelMesh:Mesh, playerBaseMesh:Mesh;
         for (var i:int = 0; i < parser.objects.length; i++) {
             var mesh:Mesh = parser.objects[i] as Mesh;
-            if (mesh.name == "Base") {
-                playerMesh = mesh;
-                playerMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
+            switch (mesh.name) {
+                case "Wheel":
+                    playerWheelMesh = mesh;
+                    playerWheelMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
+                    break;
+                case "Base":
+                    playerBaseMesh = mesh;
+                    playerBaseMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
             }
         }
-        player = new Player(playerMesh);
-        rootContainer.addChild(playerMesh);
+        player = new Player(playerWheelMesh, playerBaseMesh);
+        rootContainer.addChild(playerWheelMesh);
+        rootContainer.addChild(playerBaseMesh);
 
         stage3D = stage.stage3Ds[0];
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, onInit);
@@ -109,7 +113,6 @@ public class Main extends Sprite {
     }
 
     private function onEnterFrame(event:Event):void {
-        player.onStep();
         if (keyboard[Keyboard.LEFT]) {
             cameraDirection -= Math.PI / 128;
         }
@@ -122,6 +125,7 @@ public class Main extends Sprite {
         if (keyboard[Keyboard.DOWN]) {
             cameraPitch += Math.PI / 256;
         }
+        player.onStep();
         cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), 0);
         camera.x = player.x - cameraDistance * Math.sin(cameraDirection) * Math.cos(cameraPitch);
         camera.y = player.y - cameraDistance * Math.cos(cameraDirection) * Math.cos(cameraPitch);
@@ -131,8 +135,22 @@ public class Main extends Sprite {
         camera.render(stage3D);
     }
 
-    private function onKeyDown(event:KeyboardEvent):void {
+    private static function onKeyDown(event:KeyboardEvent):void {
         keyboard[event.keyCode] = true;
+    }
+
+    public static function angleDifference(currentAngle:Number, angleTo:Number):Number{
+        return Math.atan2(Math.sin(angleTo - currentAngle), Math.cos(angleTo - currentAngle));
+    }
+
+    public static function sign(x:Number):int {
+        if (x < 0) {
+            return -1;
+        }
+        if (x > 0) {
+            return 1;
+        }
+        return 0;
     }
 }
 }

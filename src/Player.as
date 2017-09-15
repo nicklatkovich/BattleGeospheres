@@ -1,10 +1,17 @@
 package {
 import alternativa.engine3d.core.Object3D;
 
+import flash.geom.Matrix3D;
+import flash.geom.Vector3D;
+
 import flash.ui.Keyboard;
 
 public class Player extends Sphere {
 
+    public var base:Object3D;
+    public const GUN_SPEED:Number = Math.PI / 192;
+
+    public var gunDirection:Number = 0;
     public var hSpeed:Number = 0;
     public var vSpeed:Number = 0;
     public var acc:Number = 0.2;
@@ -14,8 +21,9 @@ public class Player extends Sphere {
      */
     public var fric:Number = maxSpeed / (maxSpeed + acc);
 
-    public function Player(mesh:Object3D) {
-        super(mesh, 0, 0);
+    public function Player(meshWheel:Object3D, meshBase:Object3D) {
+        super(meshWheel, 0, 0);
+        base = meshBase;
     }
 
     public override function onStep():void {
@@ -43,6 +51,17 @@ public class Player extends Sphere {
         vSpeed *= fric;
         x += hSpeed;
         y += vSpeed;
+        var gunDiff:Number = Main.angleDifference(Main.cameraDirection, gunDirection);
+        if (Math.abs(gunDiff) <= GUN_SPEED) {
+            gunDirection = Main.cameraDirection;
+        } else {
+            gunDirection -= GUN_SPEED * Main.sign(gunDiff);
+        }
+        var matrix:Matrix3D = new Matrix3D();
+        matrix.identity();
+        matrix.appendRotation(-gunDirection / Math.PI * 180, Vector3D.Z_AXIS);
+        matrix.appendTranslation(x, y, 32);
+        base.matrix = matrix;
         super.onStep();
     }
 }
