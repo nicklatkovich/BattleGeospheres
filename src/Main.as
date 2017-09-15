@@ -37,7 +37,7 @@ public class Main extends Sprite {
 
     private var cameraDistance:Number = 256;
     private var cameraDirection:Number = 0;
-    private var cameraPitch:Number = Math.PI / 4;
+    private var cameraPitch:Number = Math.PI / 6;
 
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
@@ -109,24 +109,41 @@ public class Main extends Sprite {
     }
 
     private function onEnterFrame(event:Event):void {
+        var dx:Number = 0;
+        var dy:Number = 0;
         if (keyboard[Keyboard.W]) {
-            player.y += 2;
+            dy -= 2;
         }
         if (keyboard[Keyboard.S]) {
-            player.y -= 2;
+            dy += 2;
         }
         if (keyboard[Keyboard.A]) {
-            player.x -= 2;
+            dx -= 2;
         }
         if (keyboard[Keyboard.D]) {
-            player.x += 2;
+            dx += 2;
         }
+        player.x += Math.cos(cameraDirection) * dx - Math.sin(cameraDirection) * dy;
+        player.y -= Math.sin(cameraDirection) * dx + Math.cos(cameraDirection) * dy;
         player.onStep();
+        if (keyboard[Keyboard.LEFT]) {
+            cameraDirection -= Math.PI / 128;
+        }
+        if (keyboard[Keyboard.RIGHT]) {
+            cameraDirection += Math.PI / 128;
+        }
+        if (keyboard[Keyboard.UP]) {
+            cameraPitch -= Math.PI / 256;
+        }
+        if (keyboard[Keyboard.DOWN]) {
+            cameraPitch += Math.PI / 256;
+        }
+        cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), 0);
         camera.x = player.x - cameraDistance * Math.sin(cameraDirection) * Math.cos(cameraPitch);
         camera.y = player.y - cameraDistance * Math.cos(cameraDirection) * Math.cos(cameraPitch);
         camera.z = 32 + cameraDistance * Math.sin(cameraPitch);
         camera.rotationX = -cameraPitch - Math.PI / 2;
-//        camera.rotationZ = cameraDirection;
+        camera.rotationZ = -cameraDirection;
         camera.render(stage3D);
     }
 
