@@ -35,15 +35,15 @@ public class Main extends Sprite {
     static private const METAL_TEXTURE:Class;
     private var metalTexture:BitmapTextureResource = new BitmapTextureResource(new METAL_TEXTURE().bitmapData);
 
-    private var cameraDistance:Number = 256;
-    private var cameraDirection:Number = 0;
+    public static var cameraDistance:Number = 256;
+    public static var cameraDirection:Number = 0;
     private var cameraPitch:Number = Math.PI / 6;
 
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
-    private var player:Sphere;
-    private var keyboard:Dictionary = new Dictionary();
+    private var player:Player;
+    public static var keyboard:Dictionary = new Dictionary();
 
     public function Main() {
         stage.frameRate = 60;
@@ -85,7 +85,7 @@ public class Main extends Sprite {
                 playerMesh.setMaterialToAllSurfaces(new TextureMaterial(metalTexture));
             }
         }
-        player = new Sphere(playerMesh, 0, 128);
+        player = new Player(playerMesh);
         rootContainer.addChild(playerMesh);
 
         stage3D = stage.stage3Ds[0];
@@ -109,22 +109,6 @@ public class Main extends Sprite {
     }
 
     private function onEnterFrame(event:Event):void {
-        var dx:Number = 0;
-        var dy:Number = 0;
-        if (keyboard[Keyboard.W]) {
-            dy -= 2;
-        }
-        if (keyboard[Keyboard.S]) {
-            dy += 2;
-        }
-        if (keyboard[Keyboard.A]) {
-            dx -= 2;
-        }
-        if (keyboard[Keyboard.D]) {
-            dx += 2;
-        }
-        player.x += Math.cos(cameraDirection) * dx - Math.sin(cameraDirection) * dy;
-        player.y -= Math.sin(cameraDirection) * dx + Math.cos(cameraDirection) * dy;
         player.onStep();
         if (keyboard[Keyboard.LEFT]) {
             cameraDirection -= Math.PI / 128;
