@@ -25,29 +25,50 @@ import flash.utils.Dictionary;
 [SWF(width=1280, height=704, backgroundColor=0x000000)]
 public class Main extends Sprite {
 
+    public static const MAP_WIDTH:Number = 8;
+    public static const MAP_HEIGHT:Number = 8;
+    public static const CELL_WIDTH:Number = 256;
+    public static const CELL_HEIGHT:Number = 256;
+    public static function get MAP_REAL_WIDTH():Number {
+        return MAP_WIDTH * CELL_WIDTH;
+    }
+    public static function get MAP_REAL_HEIGHT():Number {
+        return MAP_HEIGHT * CELL_HEIGHT;
+    }
+    public static function get HALF_MAP_REAL_WIDTH():Number {
+        return MAP_REAL_WIDTH / 2.0;
+    }
+    public static function get HALF_MAP_REAL_HEIGHT():Number {
+        return MAP_REAL_HEIGHT / 2.0;
+    }
+
+    public static var instance:Main;
+
     [Embed(source="res/GroundMap.png")]
-    static private const STONE_TEXTURE:Class;
+    private static const STONE_TEXTURE:Class;
     private var stoneTexture:BitmapTextureResource = new BitmapTextureResource(new STONE_TEXTURE().bitmapData);
 
     [Embed(source="res/MetalMap.png")]
-    static private const METAL_TEXTURE:Class;
+    private static const METAL_TEXTURE:Class;
     private var metalTexture:BitmapTextureResource = new BitmapTextureResource(new METAL_TEXTURE().bitmapData);
 
     [Embed(source="res/GunMap.png")]
-    static private const GUN_TEXTURE:Class;
+    private static const GUN_TEXTURE:Class;
     private var gunTexture:BitmapTextureResource = new BitmapTextureResource(new GUN_TEXTURE().bitmapData);
 
-    public static var cameraDistance:Number = 256;
-    public static var cameraDirection:Number = 0;
+    public var cameraDistance:Number = 256;
+    public var cameraDirection:Number = 0;
     private var cameraPitch:Number = Math.PI / 6;
 
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
     private var player:Player;
-    public static var keyboard:Dictionary = new Dictionary();
+    public var keyboard:Dictionary = new Dictionary();
 
     public function Main() {
+        instance = this;
+
         stage.frameRate = 60;
         stage.align = StageAlign.TOP_LEFT;
         stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -58,12 +79,12 @@ public class Main extends Sprite {
         addChild(camera.diagram);
         rootContainer.addChild(camera);
 
-        for (var x:int = -1000; x <= 1000; x += 256) {
-            for (var y:int = -1000; y <= 1000; y += 256) {
-                var plane:Plane = new Plane(256, 256);
+        for (var x:int = 0; x <= MAP_WIDTH; x++) {
+            for (var y:int = 0; y <= MAP_HEIGHT; y++) {
+                var plane:Plane = new Plane(CELL_WIDTH, CELL_HEIGHT);
                 plane.setMaterialToAllSurfaces(new TextureMaterial(stoneTexture));
-                plane.x = x;
-                plane.y = y;
+                plane.x = x * CELL_WIDTH - HALF_MAP_REAL_WIDTH;
+                plane.y = y * CELL_HEIGHT - HALF_MAP_REAL_HEIGHT;
                 plane.z = 0;
                 rootContainer.addChild(plane);
             }
@@ -139,7 +160,7 @@ public class Main extends Sprite {
         camera.render(stage3D);
     }
 
-    private static function onKeyDown(event:KeyboardEvent):void {
+    private function onKeyDown(event:KeyboardEvent):void {
         keyboard[event.keyCode] = true;
     }
 
