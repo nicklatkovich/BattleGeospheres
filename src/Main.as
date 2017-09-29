@@ -48,9 +48,7 @@ public class Main extends Sprite {
         return MAP_REAL_HEIGHT / 2.0;
     }
 
-    public static var instance:Main;
-
-    public static var keyboard:Dictionary = new Dictionary();
+    public static var lastInstance:Main;
 
     public var cameraDistance:Number = 256;
     public var cameraDirection:Number = 0;
@@ -62,7 +60,8 @@ public class Main extends Sprite {
     private var player:Player;
 
     public function Main() {
-        instance = this;
+        lastInstance = this;
+        new InputManager(stage);
 
         stage.frameRate = 60;
         stage.align = StageAlign.TOP_LEFT;
@@ -91,8 +90,6 @@ public class Main extends Sprite {
         loader3ds.dataFormat = URLLoaderDataFormat.BINARY;
         loader3ds.load(new URLRequest("res/Sphere.3DS"));
         loader3ds.addEventListener(Event.COMPLETE, onSphereLoaded);
-        stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-        stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
     }
 
     private function onSphereLoaded(event:Event):void {
@@ -137,24 +134,17 @@ public class Main extends Sprite {
         addEventListener(Event.ENTER_FRAME, onEnterFrame);
     }
 
-    private function onKeyUp(event:KeyboardEvent):void {
-        keyboard[event.keyCode] = false;
-        if (event.keyCode == Keyboard.SPACE) {
-            trace(player.obj.matrix.rawData);
-        }
-    }
-
     private function onEnterFrame(event:Event):void {
-        if (keyboard[Keyboard.LEFT]) {
+        if (InputManager.isButtonPressed(Keyboard.LEFT)) {
             cameraDirection -= Math.PI / 128;
         }
-        if (keyboard[Keyboard.RIGHT]) {
+        if (InputManager.isButtonPressed(Keyboard.RIGHT)) {
             cameraDirection += Math.PI / 128;
         }
-        if (keyboard[Keyboard.UP]) {
+        if (InputManager.isButtonPressed(Keyboard.UP)) {
             cameraPitch -= Math.PI / 256;
         }
-        if (keyboard[Keyboard.DOWN]) {
+        if (InputManager.isButtonPressed(Keyboard.DOWN)) {
             cameraPitch += Math.PI / 256;
         }
         player.onStep();
@@ -165,10 +155,6 @@ public class Main extends Sprite {
         camera.rotationX = -cameraPitch - Math.PI / 2;
         camera.rotationZ = -cameraDirection;
         camera.render(stage3D);
-    }
-
-    private function onKeyDown(event:KeyboardEvent):void {
-        keyboard[event.keyCode] = true;
     }
 
     public static function angleDifference(currentAngle:Number, angleTo:Number):Number {

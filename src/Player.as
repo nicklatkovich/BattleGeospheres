@@ -32,20 +32,20 @@ public class Player extends Sphere {
     public override function onStep():void {
         var dx:Number = 0;
         var dy:Number = 0;
-        if (Main.keyboard[Keyboard.W]) {
+        if (InputManager.isButtonPressed(Keyboard.W)) {
             dy -= 2;
         }
-        if (Main.keyboard[Keyboard.S]) {
+        if (InputManager.isButtonPressed(Keyboard.S)) {
             dy += 2;
         }
-        if (Main.keyboard[Keyboard.A]) {
+        if (InputManager.isButtonPressed(Keyboard.A)) {
             dx -= 2;
         }
-        if (Main.keyboard[Keyboard.D]) {
+        if (InputManager.isButtonPressed(Keyboard.D)) {
             dx += 2;
         }
-        var ddx:Number = Math.cos(Main.instance.cameraDirection) * dx - Math.sin(Main.instance.cameraDirection) * dy;
-        var ddy:Number = Math.sin(Main.instance.cameraDirection) * dx + Math.cos(Main.instance.cameraDirection) * dy;
+        var ddx:Number = Math.cos(Main.lastInstance.cameraDirection) * dx - Math.sin(Main.lastInstance.cameraDirection) * dy;
+        var ddy:Number = Math.sin(Main.lastInstance.cameraDirection) * dx + Math.cos(Main.lastInstance.cameraDirection) * dy;
         var direction:Number = Math.atan2(ddy, ddx);
         var m:Number = Math.min(1, Math.abs(Math.pow(ddy, 2) + Math.pow(ddx, 2)));
         hSpeed += m * acc * Math.cos(direction);
@@ -62,9 +62,9 @@ public class Player extends Sphere {
             y = yPrevious;
             vSpeed *= -1;
         }
-        var gunDiff:Number = Main.angleDifference(Main.instance.cameraDirection, gunDirection);
+        var gunDiff:Number = Main.angleDifference(Main.lastInstance.cameraDirection, gunDirection);
         if (Math.abs(gunDiff) <= GUN_SPEED) {
-            gunDirection = Main.instance.cameraDirection;
+            gunDirection = Main.lastInstance.cameraDirection;
         } else {
             gunDirection -= GUN_SPEED * Main.sign(gunDiff);
         }
