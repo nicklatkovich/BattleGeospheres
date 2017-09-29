@@ -10,6 +10,8 @@ import alternativa.engine3d.objects.Mesh;
 import alternativa.engine3d.primitives.Plane;
 import alternativa.engine3d.resources.BitmapTextureResource;
 
+import com.adobe.air.gaming.RequestManager;
+
 import flash.display.Sprite;
 import flash.display.Stage3D;
 import flash.display.StageAlign;
@@ -48,30 +50,6 @@ public class Main extends Sprite {
 
     public static var instance:Main;
 
-    [Embed(source="res/GroundMap.png")]
-    private static const STONE_TEXTURE:Class;
-    private static var stoneTexture:BitmapTextureResource = new BitmapTextureResource(new STONE_TEXTURE().bitmapData);
-    public static var _stoneMaterial:TextureMaterial = new TextureMaterial(stoneTexture);
-    public static function get stoneMaterial():TextureMaterial {
-        return _stoneMaterial;
-    }
-
-    [Embed(source="res/MetalMap.png")]
-    private static const METAL_TEXTURE:Class;
-    private static var metalTexture:BitmapTextureResource = new BitmapTextureResource(new METAL_TEXTURE().bitmapData);
-    private static var _metalMaterial:TextureMaterial = new TextureMaterial(metalTexture);
-    public static function get metalMaterial():TextureMaterial {
-        return _metalMaterial;
-    }
-
-    [Embed(source="res/GunMap.png")]
-    private static const GUN_TEXTURE:Class;
-    private static var gunTexture:BitmapTextureResource = new BitmapTextureResource(new GUN_TEXTURE().bitmapData);
-    private static var _gunMaterial:TextureMaterial = new TextureMaterial(gunTexture);
-    private static function get gunMaterial():TextureMaterial {
-        return _gunMaterial;
-    }
-
     public static var keyboard:Dictionary = new Dictionary();
 
     public var cameraDistance:Number = 256;
@@ -96,8 +74,8 @@ public class Main extends Sprite {
         addChild(camera.diagram);
         rootContainer.addChild(camera);
 
-        var plane:Plane =
-                new Plane(MAP_REAL_WIDTH, MAP_REAL_HEIGHT, MAP_WIDTH, MAP_HEIGHT, false, false, null, stoneMaterial);
+        var plane:Plane = new Plane(MAP_REAL_WIDTH, MAP_REAL_HEIGHT, MAP_WIDTH, MAP_HEIGHT, false, false, null,
+                ResourceManager.stoneMaterial);
         rootContainer.addChild(plane);
 //        for (var x:int = 0; x <= MAP_WIDTH; x++) {
 //            for (var y:int = 0; y <= MAP_HEIGHT; y++) {
@@ -129,15 +107,15 @@ public class Main extends Sprite {
             switch (mesh.name) {
                 case "Wheel":
                     playerWheelMesh = mesh;
-                    playerWheelMesh.setMaterialToAllSurfaces(metalMaterial);
+                    playerWheelMesh.setMaterialToAllSurfaces(ResourceManager.metalMaterial);
                     break;
                 case "Base":
                     playerBaseMesh = mesh;
-                    playerBaseMesh.setMaterialToAllSurfaces(gunMaterial);
+                    playerBaseMesh.setMaterialToAllSurfaces(ResourceManager.gunMaterial);
                     break;
                 case "ForceField":
                     playerForgeFieldMesh = mesh;
-                    playerForgeFieldMesh.setMaterialToAllSurfaces(stoneMaterial);
+                    playerForgeFieldMesh.setMaterialToAllSurfaces(ResourceManager.gunMaterial);
                     break;
             }
         }
