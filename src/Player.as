@@ -9,6 +9,7 @@ import flash.ui.Keyboard;
 public class Player extends Sphere {
 
     public var base:Object3D;
+    public var forgeField:Object3D;
     public const GUN_SPEED:Number = Math.PI / 192;
 
     public var gunDirection:Number = 0;
@@ -21,24 +22,26 @@ public class Player extends Sphere {
      */
     public var fric:Number = maxSpeed / (maxSpeed + acc);
 
-    public function Player(meshWheel:Object3D, meshBase:Object3D) {
+    public function Player(meshWheel:Object3D, meshBase:Object3D, meshForgeField:Object3D) {
         super(meshWheel, 0, 0);
         base = meshBase;
+        forgeField = meshForgeField;
+//        forgeField
     }
 
     public override function onStep():void {
         var dx:Number = 0;
         var dy:Number = 0;
-        if (Main.instance.keyboard[Keyboard.W]) {
+        if (Main.keyboard[Keyboard.W]) {
             dy -= 2;
         }
-        if (Main.instance.keyboard[Keyboard.S]) {
+        if (Main.keyboard[Keyboard.S]) {
             dy += 2;
         }
-        if (Main.instance.keyboard[Keyboard.A]) {
+        if (Main.keyboard[Keyboard.A]) {
             dx -= 2;
         }
-        if (Main.instance.keyboard[Keyboard.D]) {
+        if (Main.keyboard[Keyboard.D]) {
             dx += 2;
         }
         var ddx:Number = Math.cos(Main.instance.cameraDirection) * dx - Math.sin(Main.instance.cameraDirection) * dy;
@@ -70,6 +73,7 @@ public class Player extends Sphere {
         matrix.appendRotation(-gunDirection / Math.PI * 180, Vector3D.Z_AXIS);
         matrix.appendTranslation(x, y, 32);
         base.matrix = matrix;
+        forgeField.matrix = matrix;
         super.onStep();
     }
 }
