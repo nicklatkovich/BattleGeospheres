@@ -48,6 +48,31 @@ public class ResourceManager {
         _forgeFieldMaterial.opaquePass = true;
     }
 
+    [Embed(source="res/skybox/left.jpg")]
+    private static const left_t_c:Class;
+    private static var left_t:BitmapTextureResource = new BitmapTextureResource(new left_t_c().bitmapData);
+    public static var left_mat:TextureMaterial = new TextureMaterial(left_t);
+    [Embed(source="res/skybox/right.jpg")]
+    private static const right_t_c:Class;
+    private static var right_t:BitmapTextureResource = new BitmapTextureResource(new right_t_c().bitmapData);
+    public static var right_mat:TextureMaterial = new TextureMaterial(right_t);
+    [Embed(source="res/skybox/top.jpg")]
+    private static const top_t_c:Class;
+    private static var top_t:BitmapTextureResource = new BitmapTextureResource(new top_t_c().bitmapData);
+    public static var top_mat:TextureMaterial = new TextureMaterial(top_t);
+    [Embed(source="res/skybox/bottom.jpg")]
+    static private const bottom_t_c:Class;
+    private static var bottom_t:BitmapTextureResource = new BitmapTextureResource(new bottom_t_c().bitmapData);
+    public static var bottom_mat:TextureMaterial = new TextureMaterial(bottom_t);
+    [Embed(source="res/skybox/front.jpg")]
+    static private const front_t_c:Class;
+    private static var front_t:BitmapTextureResource = new BitmapTextureResource(new front_t_c().bitmapData);
+    public static var front_mat:TextureMaterial = new TextureMaterial(front_t);
+    [Embed(source="res/skybox/back.jpg")]
+    static private const back_t_c:Class;
+    private static var back_t:BitmapTextureResource = new BitmapTextureResource(new back_t_c().bitmapData);
+    public static var back_mat:TextureMaterial = new TextureMaterial(back_t);
+
     public function ResourceManager() {
 
     }

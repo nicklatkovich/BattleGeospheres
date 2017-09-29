@@ -7,6 +7,7 @@ import alternativa.engine3d.core.View;
 import alternativa.engine3d.loaders.Parser3DS;
 import alternativa.engine3d.materials.TextureMaterial;
 import alternativa.engine3d.objects.Mesh;
+import alternativa.engine3d.objects.SkyBox;
 import alternativa.engine3d.primitives.Plane;
 import alternativa.engine3d.resources.BitmapTextureResource;
 
@@ -58,6 +59,7 @@ public class Main extends Sprite {
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
     private var player:Player;
+    private var skybox:SkyBox;
 
     public function addInRootContainer(mesh:Object3D):void {
         rootContainer.addChild(mesh);
@@ -94,6 +96,10 @@ public class Main extends Sprite {
 //                rootContainer.addChild(plane);
 //            }
 //        }
+        skybox = new SkyBox(3000, ResourceManager.left_mat, ResourceManager.right_mat, ResourceManager.back_mat,
+                ResourceManager.front_mat, ResourceManager.bottom_mat, ResourceManager.top_mat, 0.01);
+        rootContainer.addChild(skybox);
+
         var loader3ds:URLLoader = new URLLoader();
         loader3ds.dataFormat = URLLoaderDataFormat.BINARY;
         loader3ds.load(new URLRequest("res/Sphere.3DS"));
@@ -162,6 +168,9 @@ public class Main extends Sprite {
         camera.z = 32 + cameraDistance * Math.sin(cameraPitch);
         camera.rotationX = -cameraPitch - Math.PI / 2;
         camera.rotationZ = -cameraDirection;
+        skybox.x = camera.x;
+        skybox.y = camera.y;
+        skybox.z = camera.z;
         camera.render(stage3D);
     }
 
