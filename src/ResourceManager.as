@@ -28,6 +28,26 @@ public class ResourceManager {
         return _gunMaterial;
     }
 
+    [Embed(source="res/ForgeFieldMap.png")]
+    private static const FORGE_FIELD_TEXTURE:Class;
+    private static var forgeFieldTexture:BitmapTextureResource =
+            new BitmapTextureResource(new FORGE_FIELD_TEXTURE().bitmapData);
+
+    [Embed(source="res/alpha.jpg")]
+    private static const FORGE_FIELD_OPACITY_TEXTURE:Class;
+    private static var forgeFieldOpacityTexture:BitmapTextureResource =
+            new BitmapTextureResource(new FORGE_FIELD_OPACITY_TEXTURE().bitmapData);
+    private static var _forgeFieldMaterial:TextureMaterial = new TextureMaterial(forgeFieldTexture, forgeFieldTexture);
+    public static function get forgeFieldMaterial():TextureMaterial {
+        return _forgeFieldMaterial;
+    }
+
+    {
+        _forgeFieldMaterial.alphaThreshold = 0.5;
+        _forgeFieldMaterial.transparentPass = true;
+        _forgeFieldMaterial.opaquePass = true;
+    }
+
     public function ResourceManager() {
 
     }

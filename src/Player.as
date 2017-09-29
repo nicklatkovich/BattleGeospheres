@@ -11,22 +11,31 @@ public class Player extends Sphere {
     public var base:Object3D;
     public var forgeField:Object3D;
     public const GUN_SPEED:Number = Math.PI / 192;
+    public const SHOOT_STEP_INTERVAL:uint = 30;
 
     public var gunDirection:Number = 0;
     public var hSpeed:Number = 0;
     public var vSpeed:Number = 0;
     public var acc:Number = 0.2;
     public var maxSpeed:Number = 4;
+    public var shootState:uint = 0;
+    public var bullets:Vector.<Bullet> = new Vector.<Bullet>();
     /*
-    (maxSpeed + acc) * fric = maxSpeed
+     (maxSpeed + acc) * fric = maxSpeed
      */
     public var fric:Number = maxSpeed / (maxSpeed + acc);
 
     public function Player(meshWheel:Object3D, meshBase:Object3D, meshForgeField:Object3D) {
-        super(meshWheel, 0, 0);
+        super(meshWheel, 0, 0, 32);
         base = meshBase;
         forgeField = meshForgeField;
 //        forgeField
+    }
+
+    public function shoot():void {
+        var bulletMesh:Object3D = obj.clone();
+        Main.lastInstance.addInRootContainer(bulletMesh);
+        bullets.push(new Bullet(bulletMesh, x, y, z, gunDirection, maxSpeed * 2));
     }
 
     public override function onStep():void {
@@ -44,6 +53,28 @@ public class Player extends Sphere {
         if (InputManager.isButtonPressed(Keyboard.D)) {
             dx += 2;
         }
+        if (shootState > 0) {
+            shootState--;
+        }
+        if (InputManager.isButtonPressed(Keyboard.SPACE)) {
+            if (shootState == 0) {
+                shootState = SHOOT_STEP_INTERVAL;
+                shoot();
+            }
+        }
+        for (var i:uint = 0; i < bullets.length; i++) {
+            bullets[i].onStep();
+//            if (bullets[i].health == 0) {
+            if (bullets[i].x + 32 * (1 - bullets[i].scale) < -Main.HALF_MAP_REAL_WIDTH ||
+                    bullets[i].x - 32 * (1 - bullets[i].scale) > Main.HALF_MAP_REAL_WIDTH ||
+                    bullets[i].y + 32 * (1 - bullets[i].scale) < -Main.HALF_MAP_REAL_HEIGHT ||
+                    bullets[i].y - 32 * (1 - bullets[i].scale) > Main.HALF_MAP_REAL_HEIGHT) {
+                Main.lastInstance.removeFromRootContainer(bullets[i].obj);
+                bullets.removeAt(i);
+                i--;
+            }
+        }
+
         var ddx:Number = Math.cos(Main.lastInstance.cameraDirection) * dx - Math.sin(Main.lastInstance.cameraDirection) * dy;
         var ddy:Number = Math.sin(Main.lastInstance.cameraDirection) * dx + Math.cos(Main.lastInstance.cameraDirection) * dy;
         var direction:Number = Math.atan2(ddy, ddx);

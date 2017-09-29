@@ -59,6 +59,14 @@ public class Main extends Sprite {
     private var camera:Camera3D;
     private var player:Player;
 
+    public function addInRootContainer(mesh:Object3D):void {
+        rootContainer.addChild(mesh);
+    }
+
+    public function removeFromRootContainer(mesh:Object3D):void {
+        rootContainer.removeChild(mesh);
+    }
+
     public function Main() {
         lastInstance = this;
         new InputManager(stage);
@@ -112,7 +120,7 @@ public class Main extends Sprite {
                     break;
                 case "ForceField":
                     playerForgeFieldMesh = mesh;
-                    playerForgeFieldMesh.setMaterialToAllSurfaces(ResourceManager.gunMaterial);
+                    playerForgeFieldMesh.setMaterialToAllSurfaces(ResourceManager.forgeFieldMaterial);
                     break;
             }
         }
