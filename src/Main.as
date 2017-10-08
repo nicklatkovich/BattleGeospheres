@@ -53,13 +53,13 @@ public class Main extends Sprite {
 
     public var cameraDistance:Number = 256;
     public var cameraDirection:Number = 0;
+    public var player:Player;
 
     private var cameraPitch:Number = Math.PI / 6;
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
-    private var player:Player;
-    private var skybox:SkyBox;
+    private var skyBox:RotationSkyBox;
 
     public function addInRootContainer(mesh:Object3D):void {
         rootContainer.addChild(mesh);
@@ -96,9 +96,9 @@ public class Main extends Sprite {
 //                rootContainer.addChild(plane);
 //            }
 //        }
-        skybox = new SkyBox(3000, ResourceManager.left_mat, ResourceManager.right_mat, ResourceManager.back_mat,
+        skyBox = new RotationSkyBox(3000, ResourceManager.left_mat, ResourceManager.right_mat, ResourceManager.back_mat,
                 ResourceManager.front_mat, ResourceManager.bottom_mat, ResourceManager.top_mat, 0.01);
-        rootContainer.addChild(skybox);
+        rootContainer.addChild(skyBox);
 
         var loader3ds:URLLoader = new URLLoader();
         loader3ds.dataFormat = URLLoaderDataFormat.BINARY;
@@ -133,7 +133,7 @@ public class Main extends Sprite {
         player = new Player(playerWheelMesh, playerBaseMesh, playerForgeFieldMesh);
         rootContainer.addChild(playerWheelMesh);
         rootContainer.addChild(playerBaseMesh);
-//        rootContainer.addChild(playerForgeFieldMesh);
+        rootContainer.addChild(playerForgeFieldMesh);
 
         stage3D = stage.stage3Ds[0];
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, onInit);
@@ -168,9 +168,7 @@ public class Main extends Sprite {
         camera.z = 32 + cameraDistance * Math.sin(cameraPitch);
         camera.rotationX = -cameraPitch - Math.PI / 2;
         camera.rotationZ = -cameraDirection;
-        skybox.x = camera.x;
-        skybox.y = camera.y;
-        skybox.z = camera.z;
+        skyBox.OnStep();
         camera.render(stage3D);
     }
 
