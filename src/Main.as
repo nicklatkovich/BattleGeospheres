@@ -57,6 +57,7 @@ public class Main extends Sprite {
     public var cameraDirection:Number = 0.0;
     public var player:Player;
     public var forceFieldAlpha:Number = 0.0;
+    public var poles:Vector.<Pole> = new Vector.<Pole>();
 
     private var cameraPitch:Number = Math.PI / 6;
     private var stage3D:Stage3D;
@@ -104,6 +105,11 @@ public class Main extends Sprite {
                 ResourceManager.left_mat, ResourceManager.right_mat,
                 ResourceManager.back_mat, ResourceManager.front_mat,
                 ResourceManager.bottom_mat, ResourceManager.top_mat, 0.01);
+        for (var i:uint = 0; i < 20; i++) {
+            rootContainer.addChild((new Pole(
+                    Math.random() * MAP_REAL_WIDTH - HALF_MAP_REAL_WIDTH,
+                    Math.random() * MAP_REAL_HEIGHT - HALF_MAP_REAL_HEIGHT, 64)).obj);
+        }
         rootContainer.addChild(skyBox);
         forceFieldMaterial = ResourceManager.forgeFieldMaterial.clone() as TextureMaterial;
         rootContainer.addChild(new Box(MAP_REAL_WIDTH, MAP_REAL_HEIGHT, MAP_REAL_HEIGHT,
@@ -141,6 +147,9 @@ public class Main extends Sprite {
         }
         player = new Player(playerWheelMesh, playerBaseMesh, playerForgeFieldMesh,
                 ResourceManager.forgeFieldMaterial.clone() as TextureMaterial);
+        for each (var pole:Pole in poles) {
+            pole.onStep();
+        }
         rootContainer.addChild(playerWheelMesh);
         rootContainer.addChild(playerBaseMesh);
         rootContainer.addChild(playerForgeFieldMesh);
@@ -174,7 +183,7 @@ public class Main extends Sprite {
             cameraPitch += Math.PI / 256;
         }
         player.onStep();
-        forceFieldMaterial.alpha =  forceFieldAlpha;
+        forceFieldMaterial.alpha = forceFieldAlpha;
         cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), 0);
         camera.x = player.x - cameraDistance * Math.sin(cameraDirection) * Math.cos(cameraPitch);
         camera.y = player.y - cameraDistance * Math.cos(cameraDirection) * Math.cos(cameraPitch);
