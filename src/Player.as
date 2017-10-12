@@ -1,5 +1,8 @@
 package {
 import alternativa.engine3d.core.Object3D;
+import alternativa.engine3d.materials.Material;
+import alternativa.engine3d.materials.TextureMaterial;
+import alternativa.engine3d.objects.Mesh;
 
 import flash.geom.Matrix3D;
 import flash.geom.Vector3D;
@@ -8,32 +11,36 @@ import flash.ui.Keyboard;
 
 public class Player extends Sphere {
 
-    public var forceFieldDirection:Number = Number.random() * 360;
-    public var forceFieldPitch:Number = Number.random() * 360;
-
     public const FORCE_FIELD_MAX_DIRECTION_SPEED:Number = 9;
     public const FORCE_FIELD_MAX_PITCH_SPEED:Number = 9;
-
     public const FORCE_FIELD_DIRECTION_ACC:Number = 0.03;
     public const FORCE_FIELD_PITCH_ACC:Number = 0.03;
-
     public const FORCE_FIELD_DIRECTION_RESISTANCE:Number =
             FORCE_FIELD_MAX_DIRECTION_SPEED / (FORCE_FIELD_MAX_DIRECTION_SPEED + FORCE_FIELD_DIRECTION_ACC);
     public const FORCE_FIELD_PITCH_RESISTANCE:Number =
             FORCE_FIELD_MAX_PITCH_SPEED / (FORCE_FIELD_MAX_PITCH_SPEED + FORCE_FIELD_PITCH_ACC);
+    public const GUN_SPEED:Number = Math.PI / 192;
+    public const SHOOT_STEP_INTERVAL:uint = 30;
+    public const FORCE_FIELD_RADIUS:Number = 64;
 
+    public function Player(meshWheel:Object3D, meshBase:Object3D, meshForgeField:Object3D,
+                           forceFieldMaterial:TextureMaterial) {
+        super(meshWheel, 0, 0, 32);
+        base = meshBase;
+        forgeField = meshForgeField;
+        this.forceFieldMaterial = forceFieldMaterial;
+        (forgeField as Mesh).setMaterialToAllSurfaces(this.forceFieldMaterial);
+    }
+
+    public var forceFieldDirection:Number = Number.random() * 360;
+    public var forceFieldPitch:Number = Number.random() * 360;
     public var forceFieldDirectionSpeed:Number =
             Number.random() * 2 * FORCE_FIELD_MAX_DIRECTION_SPEED - FORCE_FIELD_MAX_DIRECTION_SPEED;
     public var forceFieldPitchSpeed:Number =
             Number.random() * 2 * FORCE_FIELD_MAX_PITCH_SPEED - FORCE_FIELD_MAX_PITCH_SPEED;
-
     public var forceFieldAlpha:Number = 0.0;
-
     public var base:Object3D;
     public var forgeField:Object3D;
-    public const GUN_SPEED:Number = Math.PI / 192;
-    public const SHOOT_STEP_INTERVAL:uint = 30;
-
     public var gunDirection:Number = 0;
     public var hSpeed:Number = 0;
     public var vSpeed:Number = 0;
@@ -41,23 +48,8 @@ public class Player extends Sphere {
     public var maxSpeed:Number = 4;
     public var shootState:uint = 0;
     public var bullets:Vector.<Bullet> = new Vector.<Bullet>();
-    /*
-     (maxSpeed + acc) * fric = maxSpeed
-     */
-    public var fric:Number = maxSpeed / (maxSpeed + acc);
-
-    public function Player(meshWheel:Object3D, meshBase:Object3D, meshForgeField:Object3D) {
-        super(meshWheel, 0, 0, 32);
-        base = meshBase;
-        forgeField = meshForgeField;
-//        forgeField
-    }
-
-    public function shoot():void {
-        var bulletMesh:Object3D = obj.clone();
-        Main.lastInstance.addInRootContainer(bulletMesh);
-        bullets.push(new Bullet(bulletMesh, x, y, z, gunDirection, maxSpeed * 2));
-    }
+    public var streamlining:Number = maxSpeed / (maxSpeed + acc);
+    public var forceFieldMaterial:TextureMaterial;
 
     public override function onStep():void {
         var dx:Number = 0;
@@ -95,29 +87,36 @@ public class Player extends Sphere {
                 i--;
             }
         }
-
-        var ddx:Number = Math.cos(Main.lastInstance.cameraDirection) * dx - Math.sin(Main.lastInstance.cameraDirection) * dy;
-        var ddy:Number = Math.sin(Main.lastInstance.cameraDirection) * dx + Math.cos(Main.lastInstance.cameraDirection) * dy;
+        var ddx:Number =
+                Math.cos(Main.lastInstance.cameraDirection) * dx - Math.sin(Main.lastInstance.cameraDirection) * dy;
+        var ddy:Number =
+                Math.sin(Main.lastInstance.cameraDirection) * dx + Math.cos(Main.lastInstance.cameraDirection) * dy;
         var direction:Number = Math.atan2(ddy, ddx);
         var m:Number = Math.min(1, Math.abs(Math.pow(ddy, 2) + Math.pow(ddx, 2)));
         hSpeed += m * acc * Math.cos(direction);
         vSpeed -= m * acc * Math.sin(direction);
-        hSpeed *= fric;
-        vSpeed *= fric;
+        hSpeed *= streamlining;
+        vSpeed *= streamlining;
         x += hSpeed;
         y += vSpeed;
         if (forceFieldAlpha > 0.0) {
             forceFieldAlpha -= 0.01;
         }
-        if (x > Main.HALF_MAP_REAL_WIDTH || x < -Main.HALF_MAP_REAL_WIDTH) {
+        if (
+                x > Main.HALF_MAP_REAL_WIDTH - FORCE_FIELD_RADIUS ||
+                x < -Main.HALF_MAP_REAL_WIDTH + FORCE_FIELD_RADIUS) {
             x = xPrevious;
             hSpeed *= -1;
             forceFieldAlpha = 1;
+            Main.lastInstance.forceFieldAlpha = 1.0;
         }
-        if (y > Main.HALF_MAP_REAL_HEIGHT || y < -Main.HALF_MAP_REAL_HEIGHT) {
+        if (
+                y > Main.HALF_MAP_REAL_HEIGHT - FORCE_FIELD_RADIUS ||
+                y < -Main.HALF_MAP_REAL_HEIGHT + FORCE_FIELD_RADIUS) {
             y = yPrevious;
             vSpeed *= -1;
             forceFieldAlpha = 1;
+            Main.lastInstance.forceFieldAlpha = 1.0;
         }
         var gunDiff:Number = Main.angleDifference(Main.lastInstance.cameraDirection, gunDirection);
         if (Math.abs(gunDiff) <= GUN_SPEED) {
@@ -142,8 +141,14 @@ public class Player extends Sphere {
         forceFieldMatrix.appendRotation(forceFieldDirection, Vector3D.Z_AXIS);
         forceFieldMatrix.appendTranslation(x, y, z);
         forgeField.matrix = forceFieldMatrix;
-        ResourceManager.forgeFieldMaterial.alpha = forceFieldAlpha;
+        forceFieldMaterial.alpha = forceFieldAlpha;
         super.onStep();
+    }
+
+    public function shoot():void {
+        var bulletMesh:Object3D = obj.clone();
+        Main.lastInstance.addInRootContainer(bulletMesh);
+        bullets.push(new Bullet(bulletMesh, x, y, z, gunDirection, maxSpeed * 2));
     }
 }
 }

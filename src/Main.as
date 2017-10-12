@@ -5,9 +5,11 @@ import alternativa.engine3d.core.Object3D;
 import alternativa.engine3d.core.Resource;
 import alternativa.engine3d.core.View;
 import alternativa.engine3d.loaders.Parser3DS;
+import alternativa.engine3d.materials.Material;
 import alternativa.engine3d.materials.TextureMaterial;
 import alternativa.engine3d.objects.Mesh;
 import alternativa.engine3d.objects.SkyBox;
+import alternativa.engine3d.primitives.Box;
 import alternativa.engine3d.primitives.Plane;
 import alternativa.engine3d.resources.BitmapTextureResource;
 
@@ -51,15 +53,17 @@ public class Main extends Sprite {
 
     public static var lastInstance:Main;
 
-    public var cameraDistance:Number = 256;
-    public var cameraDirection:Number = 0;
+    public var cameraDistance:Number = 256.0;
+    public var cameraDirection:Number = 0.0;
     public var player:Player;
+    public var forceFieldAlpha:Number = 0.0;
 
     private var cameraPitch:Number = Math.PI / 6;
     private var stage3D:Stage3D;
     private var rootContainer:Object3D = new Object3D();
     private var camera:Camera3D;
     private var skyBox:RotationSkyBox;
+    private var forceFieldMaterial:TextureMaterial;
 
     public function addInRootContainer(mesh:Object3D):void {
         rootContainer.addChild(mesh);
@@ -96,10 +100,16 @@ public class Main extends Sprite {
 //                rootContainer.addChild(plane);
 //            }
 //        }
-        skyBox = new RotationSkyBox(3000, ResourceManager.left_mat, ResourceManager.right_mat, ResourceManager.back_mat,
-                ResourceManager.front_mat, ResourceManager.bottom_mat, ResourceManager.top_mat, 0.01);
+        skyBox = new RotationSkyBox(3000,
+                ResourceManager.left_mat, ResourceManager.right_mat,
+                ResourceManager.back_mat, ResourceManager.front_mat,
+                ResourceManager.bottom_mat, ResourceManager.top_mat, 0.01);
         rootContainer.addChild(skyBox);
-
+        forceFieldMaterial = ResourceManager.forgeFieldMaterial.clone() as TextureMaterial;
+        rootContainer.addChild(new Box(MAP_REAL_WIDTH, MAP_REAL_HEIGHT, MAP_REAL_HEIGHT,
+                MAP_WIDTH, MAP_HEIGHT, MAP_HEIGHT, true, forceFieldMaterial));
+        rootContainer.addChild(new Box(MAP_REAL_WIDTH, MAP_REAL_HEIGHT, MAP_REAL_HEIGHT,
+                MAP_WIDTH, MAP_HEIGHT, MAP_HEIGHT, false, forceFieldMaterial));
         var loader3ds:URLLoader = new URLLoader();
         loader3ds.dataFormat = URLLoaderDataFormat.BINARY;
         loader3ds.load(new URLRequest("res/Sphere.3DS"));
@@ -126,15 +136,14 @@ public class Main extends Sprite {
                     break;
                 case "ForceField":
                     playerForgeFieldMesh = mesh;
-                    playerForgeFieldMesh.setMaterialToAllSurfaces(ResourceManager.forgeFieldMaterial);
                     break;
             }
         }
-        player = new Player(playerWheelMesh, playerBaseMesh, playerForgeFieldMesh);
+        player = new Player(playerWheelMesh, playerBaseMesh, playerForgeFieldMesh,
+                ResourceManager.forgeFieldMaterial.clone() as TextureMaterial);
         rootContainer.addChild(playerWheelMesh);
         rootContainer.addChild(playerBaseMesh);
         rootContainer.addChild(playerForgeFieldMesh);
-
         stage3D = stage.stage3Ds[0];
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, onInit);
         stage3D.requestContext3D();
@@ -149,6 +158,9 @@ public class Main extends Sprite {
     }
 
     private function onEnterFrame(event:Event):void {
+        if (forceFieldAlpha > 0.0) {
+            forceFieldAlpha -= 0.01;
+        }
         if (InputManager.isButtonPressed(Keyboard.LEFT)) {
             cameraDirection -= Math.PI / 128;
         }
@@ -162,6 +174,7 @@ public class Main extends Sprite {
             cameraPitch += Math.PI / 256;
         }
         player.onStep();
+        forceFieldMaterial.alpha =  forceFieldAlpha;
         cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), 0);
         camera.x = player.x - cameraDistance * Math.sin(cameraDirection) * Math.cos(cameraPitch);
         camera.y = player.y - cameraDistance * Math.cos(cameraDirection) * Math.cos(cameraPitch);
