@@ -84,6 +84,7 @@ public class Player extends Sphere {
                     bullets[i].y - 32 * (1 - bullets[i].scale) > Main.HALF_MAP_REAL_HEIGHT) {
                 Main.lastInstance.removeFromRootContainer(bullets[i].obj);
                 bullets.removeAt(i);
+                Main.lastInstance.forceFieldAlpha = Math.max(1.0, Main.lastInstance.forceFieldAlpha + 0.1);
                 i--;
             }
         }
