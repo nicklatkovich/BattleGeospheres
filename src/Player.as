@@ -51,6 +51,10 @@ public class Player extends Sphere {
     public var streamlining:Number = maxSpeed / (maxSpeed + acc);
     public var forceFieldMaterial:TextureMaterial;
 
+    public function get moveDirection():Vector3D {
+        return new Vector3D(hSpeed, vSpeed);
+    }
+
     public override function onStep():void {
         var dx:Number = 0;
         var dy:Number = 0;
@@ -118,6 +122,19 @@ public class Player extends Sphere {
             vSpeed *= -1;
             forceFieldAlpha = 1;
             Main.lastInstance.forceFieldAlpha = 1.0;
+        }
+        for each (var pole:Pole in Main.lastInstance.poles) {
+            if (SimpleUtils.pointDistance(pole.position, this.position) < FORCE_FIELD_RADIUS + pole.radius) {
+                x = xPrevious;
+                y = yPrevious;
+                var normal:Vector3D = new Vector3D(x - pole.x, y - pole.y);
+                normal.normalize();
+                normal.scaleBy(2 * moveDirection.dotProduct(normal));
+                var newDirection:Vector3D = moveDirection.subtract(normal);
+                hSpeed = newDirection.x;
+                vSpeed = newDirection.y;
+                forceFieldAlpha = 1.0;
+            }
         }
         var gunDiff:Number = Main.angleDifference(Main.lastInstance.cameraDirection, gunDirection);
         if (Math.abs(gunDiff) <= GUN_SPEED) {

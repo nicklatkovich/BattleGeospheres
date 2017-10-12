@@ -3,6 +3,7 @@ import alternativa.engine3d.core.Object3D;
 
 import flash.geom.Matrix;
 import flash.geom.Matrix3D;
+import flash.geom.Vector3D;
 
 public class Instance {
 
@@ -22,6 +23,10 @@ public class Instance {
         this.yPrevious = this.y = y;
         this.zPrevious = this.z = z;
         rotationMatrix.identity();
+    }
+
+    public function get position():Vector3D {
+        return new Vector3D(x, y, z);
     }
 
     public function onStep():void {
