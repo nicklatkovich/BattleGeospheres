@@ -79,17 +79,29 @@ public class Player extends Sphere {
                 shoot();
             }
         }
-        for (var i:uint = 0; i < bullets.length; i++) {
+        for (var i:int = 0; i < bullets.length; i++) {
             bullets[i].onStep();
 //            if (bullets[i].health == 0) {
-            if (bullets[i].x + 32 * (1 - bullets[i].scale) < -Main.HALF_MAP_REAL_WIDTH ||
-                    bullets[i].x - 32 * (1 - bullets[i].scale) > Main.HALF_MAP_REAL_WIDTH ||
-                    bullets[i].y + 32 * (1 - bullets[i].scale) < -Main.HALF_MAP_REAL_HEIGHT ||
-                    bullets[i].y - 32 * (1 - bullets[i].scale) > Main.HALF_MAP_REAL_HEIGHT) {
+            var bulletSize:Number = bullets[i].scale * 32;
+            if (
+                    bullets[i].x < -Main.HALF_MAP_REAL_WIDTH + bulletSize ||
+                    bullets[i].x > Main.HALF_MAP_REAL_WIDTH - bulletSize ||
+                    bullets[i].y < -Main.HALF_MAP_REAL_HEIGHT + bulletSize ||
+                    bullets[i].y > Main.HALF_MAP_REAL_HEIGHT - bulletSize) {
                 Main.lastInstance.removeFromRootContainer(bullets[i].obj);
                 bullets.removeAt(i);
                 Main.lastInstance.forceFieldAlpha = Math.max(1.0, Main.lastInstance.forceFieldAlpha + 0.1);
                 i--;
+                continue;
+            }
+            //noinspection JSDuplicatedDeclaration
+            for each (var pole:Pole in Main.lastInstance.poles) {
+                if (SimpleUtils.pointDistance(pole.position, bullets[i].position) < pole.radius + bulletSize) {
+                    Main.lastInstance.removeFromRootContainer(bullets[i].obj);
+                    bullets.removeAt(i);
+                    i--;
+                    break;
+                }
             }
         }
         var ddx:Number =
@@ -123,6 +135,7 @@ public class Player extends Sphere {
             forceFieldAlpha = 1;
             Main.lastInstance.forceFieldAlpha = 1.0;
         }
+        //noinspection JSDuplicatedDeclaration
         for each (var pole:Pole in Main.lastInstance.poles) {
             if (SimpleUtils.pointDistance(pole.position, this.position) < FORCE_FIELD_RADIUS + pole.radius) {
                 x = xPrevious;

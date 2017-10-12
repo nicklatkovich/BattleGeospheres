@@ -2,6 +2,7 @@ package {
 import alternativa.engine3d.core.Object3D;
 
 import flash.events.Event;
+import flash.geom.Vector3D;
 
 public class Bullet extends Instance {
 
@@ -19,6 +20,11 @@ public class Bullet extends Instance {
 //        health = liveSteps;
         scale = 0.3;
     }
+
+    public function get moveDirection():Vector3D {
+        return new Vector3D(hSpeed, vSpeed);
+    }
+
 
     public override function onStep():void {
         x += hSpeed;
